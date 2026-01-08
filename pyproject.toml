@@ -1,0 +1,34 @@
+[project]
+name = "wassddpm"
+version = "0.1.0"
+description = "DDPM interpolator for WASS scattered point clouds"
+authors = [
+    {name = "Filippo Bergamasco",email = "filippo.bergamasco@unive.it"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "h5py", 
+    "tqdm",
+    "torch",
+    "diffusers",
+    "accelerate",
+    "scipy",
+    "opencv-python",
+    "torchvision",
+    "matplotlib",
+    "datasets>=2.20.0",
+    "cvbase",
+    "NetCDF4",
+    "cmocean"
+]
+
+[project.scripts]
+wassddpm="wassddpm:main"
+
+[tool.poetry]
+packages = [{include = "wassddpm", from = "src"}]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
