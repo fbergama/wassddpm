@@ -23,6 +23,7 @@ cd wassddpm
 python -m venv .venv
 source .venv/bin/activate
 pip install .
+wget -P src/wassddpm/Conditional_DDIM/unet https://www.dais.unive.it/\~bergamasco/files/diffusion_pytorch_model.safetensors
 ```
 
 
