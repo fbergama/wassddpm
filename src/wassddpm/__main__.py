@@ -191,6 +191,8 @@ def postproc_Kalman( h5file, gen_dir, out_ncfile, KALMAN_PROCESS_STD=0.04, do_pl
             if not "Z" in outf.variables:
                 outf.createVariable("Z", outf["/Z_wassfast"].datatype,outf["/Z_wassfast"].dimensions )
 
+            if not "Z_est_absolute_error" in outf.variables:
+                outf.createVariable("Z_est_absolute_error", outf["/Z_wassfast"].datatype, outf["/Z_wassfast"].dimensions )
 
             print("Applying Kalman filter to the interpolated surface samples...")
 
@@ -224,16 +226,29 @@ def postproc_Kalman( h5file, gen_dir, out_ncfile, KALMAN_PROCESS_STD=0.04, do_pl
                         phdiff = compute_phase_diff_matrix( KX_ab, KY_ab, -1, 1, dt )
                         Z_predict = spec_predict( prev_Z, phdiff )
 
+
+                        # select surface that minimizes the absolute distance to all the others
+                        k = gen_surf.shape[0]
+                        D = np.zeros((k,k), dtype=float)
+
+                        for ii in range(k-1):
+                            for jj in range(ii,k):
+                                D[ii,jj] = D[jj,ii] = np.sum(np.abs(gen_surf[ii,...] - gen_surf[jj,...]))
+
+                        dist = np.sum(D, axis=0)
+                        min_idx = np.argmin(dist)
+                        Z_avg_best_surf = gen_surf[min_idx,...]
+
                         # select closest to prediction
                         # dist = np.mean(np.abs(gen_surf[:,50:200,50:200] - Z_predict[50:200,50:200]), axis=(1,2))
                         # min_idx = np.argmin(dist)
                         # Z_pred_best_surf = gen_surf[min_idx,...]    
 
                         # select closest to the mean
-                        avg_surf = np.mean(gen_surf[:,50:200,50:200], axis=0)
-                        dist = np.mean(np.square(gen_surf[:,50:200,50:200] - avg_surf), axis=(1,2))
-                        min_idx = np.argmin(dist)
-                        Z_avg_best_surf = gen_surf[min_idx,...]
+                        #avg_surf = np.mean(gen_surf[:,50:200,50:200], axis=0)
+                        #dist = np.mean(np.square(gen_surf[:,50:200,50:200] - avg_surf), axis=(1,2))
+                        #min_idx = np.argmin(dist)
+                        #Z_avg_best_surf = gen_surf[min_idx,...]
 
                         # print("Prediction RMS = ", np.sqrt(np.mean(np.square(GT-Z_predict))))
                         # print("Z best pred-closest RMS = ", np.sqrt(np.mean(np.square(GT-Z_best_surf))))
@@ -250,28 +265,38 @@ def postproc_Kalman( h5file, gen_dir, out_ncfile, KALMAN_PROCESS_STD=0.04, do_pl
                         K = np.square(Qn)/(np.square(Qn)+np.square(Rn))
                         
                         Z_final = Z_predict + K*(Z_best_surf-Z_predict)
+                        Error_mae_final = 2.1 * np.sqrt(2.0/np.pi) * np.sqrt( (1-K)*np.square(Qn) )
+
                         #print("Z final RMS = ", np.sqrt(np.mean(np.square(GT-Z_final))))
 
                         prev_t = t
                         prev_Z = Z_final
                         
                         outf["/Z"][idx,:,:] = ( prev_Z*(zmax-zmin) + zmin ) * 1000.0
+                        outf["/Z_est_absolute_error"][idx,:,:] = Error_mae_final*(zmax-zmin) * 1000.0
 
                         if do_plots:
                             plt.figure( figsize=(15,10))
-                            plt.subplot(1,3,1)
+
+                            plt.subplot(1,4,1)
                             plt.imshow(outf["/Z_wassfast"][idx,...], cmap=cmocean.cm.deep_r, vmin=zmin*1000, vmax=zmax*1000 )
                             plt.title("WASSfast idx=%06d"%idx)
 
-                            plt.subplot(1,3,2)
+                            plt.subplot(1,4,2)
                             MASKPT = np.clip( np.dstack((MASK,MASK,MASK)).astype(np.uint8)*255, 0, 255)
                             plt.imshow(MASKPT)
                             plt.title("Points")
 
-                            plt.subplot(1,3,3)
+                            plt.subplot(1,4,3)
 
                             plt.imshow(outf["/Z"][idx,...], cmap=cmocean.cm.deep_r, vmin=zmin*1000, vmax=zmax*1000 )
                             plt.title("DDPM+KF")
+
+                            plt.subplot(1,4,4)
+
+                            plt.imshow(outf["/Z_est_absolute_error"][idx,...], cmap="jet", vmin=0, vmax=500 )
+                            plt.title("Estimated abs. error")
+                            
                             plt.savefig("%s/%04d.png"%("plots",idx), bbox_inches='tight')
                             plt.close()
 
