@@ -20,10 +20,10 @@ to install packages locally):
 ```
 git clone https://github.com/fbergama/wassddpm.git
 cd wassddpm
+wget -P src/wassddpm/Conditional_DDIM/unet https://www.dais.unive.it/\~bergamasco/files/diffusion_pytorch_model.safetensors
 python -m venv .venv
 source .venv/bin/activate
 pip install .
-wget -P src/wassddpm/Conditional_DDIM/unet https://www.dais.unive.it/\~bergamasco/files/diffusion_pytorch_model.safetensors
 ```
 
 
