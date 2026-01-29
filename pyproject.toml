@@ -1,6 +1,6 @@
 [project]
 name = "wassddpm"
-version = "0.2.0"
+version = "0.2.2"
 description = "DDPM interpolator for WASS scattered point clouds"
 authors = [
     {name = "Filippo Bergamasco",email = "filippo.bergamasco@unive.it"}

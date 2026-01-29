@@ -296,9 +296,25 @@ def postproc_Kalman( h5file, gen_dir, out_ncfile, KALMAN_PROCESS_STD=0.04, do_pl
 
                             plt.imshow(outf["/Z_est_absolute_error"][idx,...], cmap="jet", vmin=0, vmax=500 )
                             plt.title("Estimated abs. error")
-                            
                             plt.savefig("%s/%04d.png"%("plots",idx), bbox_inches='tight')
                             plt.close()
+
+
+                            #fig, ax0 = plt.subplots( figsize=(2,2))
+                            #ax0.imshow( gen_std, cmap="jet" )
+                            #ax0.get_xaxis().set_visible(False)
+                            #ax0.get_yaxis().set_visible(False)
+                            #plt.tight_layout()
+                            #fig.savefig("%s/_std_%04d.png"%("plots",idx), bbox_inches='tight')
+                            #plt.close()
+
+                            #fig, ax0 = plt.subplots( figsize=(2,2))
+                            #ax0.imshow(outf["/Z_est_absolute_error"][idx,...], cmap="jet", vmin=0, vmax=500 )
+                            #ax0.get_xaxis().set_visible(False)
+                            #ax0.get_yaxis().set_visible(False)
+                            #plt.tight_layout()
+                            #fig.savefig("%s/_eae_%04d.png"%("plots",idx), bbox_inches='tight')
+                            #plt.close()
 
 
                 except FileNotFoundError:
